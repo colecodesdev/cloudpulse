@@ -1,8 +1,8 @@
 # CloudPulse Roadmap
 
 ## MVP (Local Full Stack Running)
-- [ ] Spring Boot backend created
-- [ ] React frontend created
+- [x] Spring Boot backend created
+- [x] React frontend created
 - [ ] PostgreSQL running in Docker Compose
 - [ ] Backend connects to DB
 - [ ] API returns list of services
