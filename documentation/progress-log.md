@@ -11,3 +11,9 @@
 - Created React + TypeScript frontend scaffold using Vite
 - Connected frontend to backend health endpoint
 - Resolved CORS configuration
+
+- Added PostgreSQL via Docker Compose
+- Configured Spring Boot datasource for Postgres
+- Implemented ServiceInstance entity + repository
+- Added GET /api/services and POST /api/services
+- Verified persistence via curl

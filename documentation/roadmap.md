@@ -3,9 +3,9 @@
 ## MVP (Local Full Stack Running)
 - [x] Spring Boot backend created
 - [x] React frontend created
-- [ ] PostgreSQL running in Docker Compose
-- [ ] Backend connects to DB
-- [ ] API returns list of services
+- [x] PostgreSQL running in Docker Compose
+- [x] Backend connects to DB
+- [x] API returns list of services
 - [ ] Frontend displays services
 
 ## Phase 2 (AWS + Terraform)
