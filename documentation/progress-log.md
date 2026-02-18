@@ -17,3 +17,7 @@
 - Implemented ServiceInstance entity + repository
 - Added GET /api/services and POST /api/services
 - Verified persistence via curl
+
+- Implemented frontend services list using GET /api/services
+- Added create service form that POSTs to /api/services
+- Verified persistence by refreshing and confirming DB-backed results

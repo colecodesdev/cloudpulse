@@ -6,7 +6,8 @@
 - [x] PostgreSQL running in Docker Compose
 - [x] Backend connects to DB
 - [x] API returns list of services
-- [ ] Frontend displays services
+- [x] Frontend displays services
+- [x] Frontend can create services
 
 ## Phase 2 (AWS + Terraform)
 - [ ] Terraform VPC setup

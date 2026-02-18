@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type ServiceInstance = {
     id: number;
@@ -7,22 +7,89 @@ type ServiceInstance = {
     status: string;
 };
 
+type FormState = {
+    name: string;
+    environment: string;
+    status: string;
+};
+
 function App() {
     const [services, setServices] = useState<ServiceInstance[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
+
+    const [form, setForm] = useState<FormState>({
+        name: "",
+        environment: "",
+        status: "",
+    });
+
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const apiBase = "http://localhost:8080";
+
+    const canSubmit = useMemo(() => {
+        return (
+            form.name.trim().length > 0 &&
+            form.environment.trim().length > 0 &&
+            form.status.trim().length > 0
+        );
+    }, [form]);
 
     const loadServices = async () => {
         setLoading(true);
+        setLoadError(null);
 
         try {
-            const res = await fetch("http://localhost:8080/api/services");
-            const data = await res.json();
+            const res = await fetch(`${apiBase}/api/services`);
+            if (!res.ok) {
+                throw new Error(`GET /api/services failed: ${res.status}`);
+            }
+            const data = (await res.json()) as ServiceInstance[];
             setServices(data);
-        } catch {
+        } catch (e) {
             setServices([]);
+            setLoadError(e instanceof Error ? e.message : "Failed to load services");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const submitService = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!canSubmit) {
+            setSubmitError("Please fill out all fields.");
+            return;
         }
 
-        setLoading(false);
+        setSubmitting(true);
+        setSubmitError(null);
+
+        try {
+            const res = await fetch(`${apiBase}/api/services`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: form.name.trim(),
+                    environment: form.environment.trim(),
+                    status: form.status.trim(),
+                }),
+            });
+
+            if (!res.ok) {
+                const text = await res.text().catch(() => "");
+                throw new Error(`POST /api/services failed: ${res.status} ${text}`);
+            }
+
+            setForm({ name: "", environment: "", status: "" });
+            await loadServices();
+        } catch (e) {
+            setSubmitError(e instanceof Error ? e.message : "Failed to create service");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     useEffect(() => {
@@ -30,30 +97,73 @@ function App() {
     }, []);
 
     return (
-        <div style={{ padding: "2rem" }}>
+        <div style={{ padding: "2rem", maxWidth: 900, margin: "0 auto" }}>
             <h1>CloudPulse</h1>
 
-            <button onClick={loadServices}>Refresh</button>
+            <div style={{ marginTop: "1.25rem" }}>
+                <h2>Create Service</h2>
 
-            {loading ? (
-                <p>Loading services...</p>
-            ) : (
-                <>
-                    <h2>Services ({services.length})</h2>
+                <form onSubmit={submitService} style={{ display: "grid", gap: "0.75rem" }}>
+                    <label style={{ display: "grid", gap: "0.25rem" }}>
+                        <span>Name</span>
+                        <input
+                            value={form.name}
+                            onChange={(ev) => setForm((p) => ({ ...p, name: ev.target.value }))}
+                            placeholder="demo-service"
+                        />
+                    </label>
 
-                    {services.length === 0 ? (
-                        <p>No services found.</p>
-                    ) : (
-                        <ul>
-                            {services.map((s) => (
-                                <li key={s.id}>
-                                    <strong>{s.name}</strong> — {s.environment} — {s.status}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </>
-            )}
+                    <label style={{ display: "grid", gap: "0.25rem" }}>
+                        <span>Environment</span>
+                        <input
+                            value={form.environment}
+                            onChange={(ev) => setForm((p) => ({ ...p, environment: ev.target.value }))}
+                            placeholder="local"
+                        />
+                    </label>
+
+                    <label style={{ display: "grid", gap: "0.25rem" }}>
+                        <span>Status</span>
+                        <input
+                            value={form.status}
+                            onChange={(ev) => setForm((p) => ({ ...p, status: ev.target.value }))}
+                            placeholder="healthy"
+                        />
+                    </label>
+
+                    <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                        <button type="submit" disabled={!canSubmit || submitting}>
+                            {submitting ? "Creating..." : "Create"}
+                        </button>
+                        <button type="button" onClick={loadServices} disabled={loading}>
+                            Refresh
+                        </button>
+                    </div>
+
+                    {submitError ? <p style={{ margin: 0 }}>Error: {submitError}</p> : null}
+                </form>
+            </div>
+
+            <div style={{ marginTop: "2rem" }}>
+                <h2>Services</h2>
+
+                {loading ? <p>Loading services...</p> : null}
+                {loadError ? <p>Error: {loadError}</p> : null}
+
+                {!loading && !loadError && services.length === 0 ? (
+                    <p>No services found.</p>
+                ) : null}
+
+                {!loading && !loadError && services.length > 0 ? (
+                    <ul style={{ paddingLeft: "1.25rem" }}>
+                        {services.map((s) => (
+                            <li key={s.id}>
+                                <strong>{s.name}</strong> — {s.environment} — {s.status}
+                            </li>
+                        ))}
+                    </ul>
+                ) : null}
+            </div>
         </div>
     );
 }
