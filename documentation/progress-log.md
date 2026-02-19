@@ -21,3 +21,7 @@
 - Implemented frontend services list using GET /api/services
 - Added create service form that POSTs to /api/services
 - Verified persistence by refreshing and confirming DB-backed results
+
+- Added frontend env-based API configuration using VITE_API_BASE_URL
+- Centralized API calls and shared types into src/api.ts
+- Refactored App.tsx to use API module for GET/POST services

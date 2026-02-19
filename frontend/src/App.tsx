@@ -1,11 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
-type ServiceInstance = {
-    id: number;
-    name: string;
-    environment: string;
-    status: string;
-};
+import { createService, getServices, type ServiceInstance } from "./api";
 
 type FormState = {
     name: string;
@@ -27,8 +21,6 @@ function App() {
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const apiBase = "http://localhost:8080";
-
     const canSubmit = useMemo(() => {
         return (
             form.name.trim().length > 0 &&
@@ -42,11 +34,7 @@ function App() {
         setLoadError(null);
 
         try {
-            const res = await fetch(`${apiBase}/api/services`);
-            if (!res.ok) {
-                throw new Error(`GET /api/services failed: ${res.status}`);
-            }
-            const data = (await res.json()) as ServiceInstance[];
+            const data = await getServices();
             setServices(data);
         } catch (e) {
             setServices([]);
@@ -68,20 +56,11 @@ function App() {
         setSubmitError(null);
 
         try {
-            const res = await fetch(`${apiBase}/api/services`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: form.name.trim(),
-                    environment: form.environment.trim(),
-                    status: form.status.trim(),
-                }),
+            await createService({
+                name: form.name.trim(),
+                environment: form.environment.trim(),
+                status: form.status.trim(),
             });
-
-            if (!res.ok) {
-                const text = await res.text().catch(() => "");
-                throw new Error(`POST /api/services failed: ${res.status} ${text}`);
-            }
 
             setForm({ name: "", environment: "", status: "" });
             await loadServices();
@@ -117,7 +96,9 @@ function App() {
                         <span>Environment</span>
                         <input
                             value={form.environment}
-                            onChange={(ev) => setForm((p) => ({ ...p, environment: ev.target.value }))}
+                            onChange={(ev) =>
+                                setForm((p) => ({ ...p, environment: ev.target.value }))
+                            }
                             placeholder="local"
                         />
                     </label>

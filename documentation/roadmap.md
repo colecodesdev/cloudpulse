@@ -8,6 +8,8 @@
 - [x] API returns list of services
 - [x] Frontend displays services
 - [x] Frontend can create services
+- [x] Frontend uses env-based API base URL
+- [x] API calls centralized in frontend API module
 
 ## Phase 2 (AWS + Terraform)
 - [ ] Terraform VPC setup
