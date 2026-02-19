@@ -37,3 +37,7 @@
 - Added GitHub Actions CI workflow
 - Workflow builds backend (Maven) and frontend (Vite)
 - Verified CI runs successfully on push
+
+- Updated GitHub Actions CI to build backend Docker image
+- Updated GitHub Actions CI to build frontend Docker image
+- Verified Docker builds succeed in CI
