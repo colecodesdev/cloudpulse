@@ -29,4 +29,5 @@
 ## Phase 4 (CI/CD)
 - [x] GitHub Actions build/test
 - [x] CI builds Docker images
+- [x] CI pushes Docker images to ECR
 - [ ] GitHub Actions deploy

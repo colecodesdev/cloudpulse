@@ -41,3 +41,8 @@
 - Updated GitHub Actions CI to build backend Docker image
 - Updated GitHub Actions CI to build frontend Docker image
 - Verified Docker builds succeed in CI
+- 
+- Created ECR repositories for backend and frontend
+- Created GitHub OIDC IAM role for CI authentication
+- Updated GitHub Actions workflow to push Docker images to ECR
+- Verified CI successfully publishes images to ECR
