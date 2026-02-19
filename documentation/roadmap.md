@@ -10,6 +10,10 @@
 - [x] Frontend can create services
 - [x] Frontend uses env-based API base URL
 - [x] API calls centralized in frontend API module
+- [x] Backend Dockerfile created
+- [x] Frontend Dockerfile created
+- [x] Full stack runs via Docker Compose (db + backend + frontend)
+- [x] Backend CORS is env configurable
 
 ## Phase 2 (AWS + Terraform)
 - [ ] Terraform VPC setup

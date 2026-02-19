@@ -25,3 +25,11 @@
 - Added frontend env-based API configuration using VITE_API_BASE_URL
 - Centralized API calls and shared types into src/api.ts
 - Refactored App.tsx to use API module for GET/POST services
+
+- Dockerized backend with multi-stage Dockerfile
+- Dockerized frontend with Nginx serving production build
+- Updated docker-compose.yml to run db + backend + frontend together
+- Implemented env-driven backend datasource configuration
+- Implemented centralized configurable CORS configuration
+- Verified full stack runs locally via Docker Compose
+- Verified persistence through UI and DB
