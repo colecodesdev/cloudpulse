@@ -27,5 +27,5 @@
 - [ ] Metrics view
 
 ## Phase 4 (CI/CD)
-- [ ] GitHub Actions build/test
+- [x] GitHub Actions build/test
 - [ ] GitHub Actions deploy

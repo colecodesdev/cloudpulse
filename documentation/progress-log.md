@@ -33,3 +33,7 @@
 - Implemented centralized configurable CORS configuration
 - Verified full stack runs locally via Docker Compose
 - Verified persistence through UI and DB
+
+- Added GitHub Actions CI workflow
+- Workflow builds backend (Maven) and frontend (Vite)
+- Verified CI runs successfully on push
