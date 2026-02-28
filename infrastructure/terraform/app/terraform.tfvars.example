@@ -1,0 +1,3 @@
+postgres_password = "REPLACE_ME"
+frontend_image_tag = "frontend-nginx-proxy-v2"
+backend_image_tag  = "latest"
