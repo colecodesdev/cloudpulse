@@ -34,3 +34,8 @@ export async function createService(input: {
 
     return res.json();
 }
+
+export async function getHealth(): Promise<boolean> {
+    const res = await fetch(`${API_BASE_URL}/api/health`);
+    return res.ok;
+}
