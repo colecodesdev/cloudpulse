@@ -152,3 +152,87 @@ jobs:
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/cloudpulse-frontend:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/cloudpulse-frontend:latest
+
+  deploy-ecs:
+    name: Deploy to ECS (Register Task Def + Update Service)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend-ecr-push, frontend-ecr-push]
+
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Register new task definition revision and update service
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CLUSTER="cloudpulse-dev-cluster"
+          SERVICE="cloudpulse-dev-app"
+          REGION="${{ secrets.AWS_REGION }}"
+          ACCOUNT_ID="413576439231"
+          ECR_BASE="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
+
+          BACKEND_IMAGE="${ECR_BASE}/cloudpulse-backend:${{ github.sha }}"
+          FRONTEND_IMAGE="${ECR_BASE}/cloudpulse-frontend:${{ github.sha }}"
+
+          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE" \
+            --region "$REGION" \
+            --query "services[0].taskDefinition" \
+            --output text)
+
+          aws ecs describe-task-definition \
+            --task-definition "$CURRENT_TASK_DEF_ARN" \
+            --region "$REGION" \
+            --query "taskDefinition" \
+            --output json > taskdef.json
+
+          jq --arg BACKEND_IMAGE "$BACKEND_IMAGE" \
+             --arg FRONTEND_IMAGE "$FRONTEND_IMAGE" \
+             '
+             del(
+               .taskDefinitionArn,
+               .revision,
+               .status,
+               .requiresAttributes,
+               .compatibilities,
+               .registeredAt,
+               .registeredBy
+             )
+             | .containerDefinitions |= map(
+                 if .name == "backend" then .image = $BACKEND_IMAGE
+                 elif .name == "frontend" then .image = $FRONTEND_IMAGE
+                 else .
+                 end
+               )
+             ' taskdef.json > taskdef-new.json
+
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --region "$REGION" \
+            --cli-input-json file://taskdef-new.json \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
+
+          aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$SERVICE" \
+            --task-definition "$NEW_TASK_DEF_ARN" \
+            --region "$REGION"
+
+          aws ecs wait services-stable \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE" \
+            --region "$REGION"
+
+          echo "Deployment complete: $NEW_TASK_DEF_ARN"
